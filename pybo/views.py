@@ -6,8 +6,7 @@ from django.utils import timezone
 
 # Create your views here.
 from pybo.forms import QuestionForm, AnswerForm
-from pybo.models import Question
-
+from pybo.models import Question, Answer
 
 # 질문 리스트
 def index(request):
@@ -34,14 +33,12 @@ def index(request):
     context = {'question_list': page_obj}
     return render(request, 'pybo/question_list.html', context)
 
-
 # 글 상세 보기
 def detail(request, question_id):
     #question = Question.objects.get(id=question_id)
     question = get_object_or_404(Question, pk=question_id)
     context = {'question': question}
     return render(request, 'pybo/detail.html', context)
-
 
 # 질문 등록
 @login_required(login_url='common:login')
@@ -58,7 +55,6 @@ def question_create(request):
         form = QuestionForm()
     context = {'form': form}
     return render(request, 'pybo/question_form.html', context)
-
 
 # 답변 등록
 @login_required(login_url='common:login')
@@ -78,7 +74,6 @@ def answer_create(request, question_id):
     context = {'question':question, 'form': form}
     return render(request, 'pybo/detail.html', context)
 
-
 # 질문 수정
 @login_required(login_url='common:login')
 def question_modify(request, question_id):
@@ -96,10 +91,28 @@ def question_modify(request, question_id):
     context = {'form': form}
     return render(request, 'pybo/question_form.html', context)
 
-
 # 질문 삭제
 @login_required(login_url='common:login')
 def question_delete(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     question.delete()
     return redirect('pybo:index')
+
+# 답변 수정
+@login_required(login_url='common:login')
+def answer_modify(request, answer_id):
+    answer = get_object_or_404(Answer, pk=answer_id)
+    if request.method == 'POST':
+        form = AnswerForm(request.POST, instance=answer)
+        if form.is_valid():
+            answer = form.save(commit=False)
+            answer.author = request.user
+            answer.modify_date = timezone.now()
+            answer.save()
+            return redirect('pybo:detail', question_id=answer.question.id)
+    else:
+        form = AnswerForm(instance=answer)
+    context = {'answer': answer, 'form': form}
+    return render(request, 'pybo/answer_form.html', context)
+
+
