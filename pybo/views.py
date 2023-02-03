@@ -115,4 +115,12 @@ def answer_modify(request, answer_id):
     context = {'answer': answer, 'form': form}
     return render(request, 'pybo/answer_form.html', context)
 
-
+# 질문 댓글 등록
+@login_required(login_url='common:login')
+def comment_create_question(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    if request.method == "POST":
+        pass
+    else:
+        pass
+    return render(request, 'pybo/comment_form.html')
